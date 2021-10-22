@@ -1,0 +1,2 @@
+Only best solution: finding optimal trajectory for spacecraft
+Approxeimately good enough: knapsack problem (chapter 16.2)

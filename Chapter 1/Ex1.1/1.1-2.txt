@@ -1,0 +1,2 @@
+Memory consumption, simplicity of implementation of the algorithm,
+correctness (Chapter 31)

@@ -1,0 +1,2 @@
+Sorting example: displaying products on a store site in ascending order
+of price (or other variable), from cheap to expensive.
