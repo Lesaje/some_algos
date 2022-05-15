@@ -1,5 +1,0 @@
-Linked lists:
-Advantages: the ability to add an item to the middle
-of the list without overwriting it.
-Disadvantages: finding the desired element in time
-depending on the size of the list.

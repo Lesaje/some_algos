@@ -1,3 +1,0 @@
-Similarities: need in finding shortest path
-Differences: need to return in the initial vertice,
-need in visiting all delivery stops for traveling salesman
