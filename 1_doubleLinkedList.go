@@ -34,11 +34,6 @@ func (list *List[T]) Insert(info T, index int) any {
         return nil
     }
 
-    //if !list.checkCompatibility(info) {
-    //   err := any("Item must be the same type as other elements in list")
-    //    return err
-    //}
-
     if list.size == index {
         list.tail.next = &newNode
         newNode.prev = list.tail
@@ -118,7 +113,8 @@ func (list List[T]) Size() int {
 }
 
 //Erase returns err
-func (list *List[T]) Erase(start, end int) any { //Removes range of elements ([first,last)).
+//Removes range of elements ([first,last)).
+func (list *List[T]) Erase(start, end int) any {
     if start >= list.size || end >= list.size {
         err := any("List overflow")
         return err
