@@ -1,6 +1,7 @@
 package main
 
 import (
+    "errors"
     "fmt"
 )
 
@@ -17,11 +18,10 @@ type List[T any] struct {
 }
 
 //Insert returns err if something wrong, nil otherwise
-func (list *List[T]) Insert(info T, index int) any {
+func (list *List[T]) Insert(info T, index int) error {
 
     if index > list.size {
-        err := any("List overflow")
-        return err
+        return errors.New("list overflow")
     }
 
     var newNode node[T]
@@ -85,12 +85,11 @@ func (list List[T]) Print() { // because any cannot be converted to string, ther
 }
 
 //Access returns err, element
-func (list List[T]) Access(index int) (any, T) {
+func (list List[T]) Access(index int) (error, T) {
 
     if index >= list.size {
-        err := any("List overflow")
         var result T
-        return err, result
+        return errors.New("list overflow"), result
     }
     if index < list.size/2 {
         curNode := list.head
@@ -114,10 +113,9 @@ func (list List[T]) Size() int {
 
 //Erase returns err
 //Removes range of elements ([first,last)).
-func (list *List[T]) Erase(start, end int) any {
+func (list *List[T]) Erase(start, end int) error {
     if start >= list.size || end >= list.size {
-        err := any("List overflow")
-        return err
+        return errors.New("list overflow")
     }
     var startNode *node[T]
     if start == 0 {
@@ -219,7 +217,6 @@ func (list *List[T]) Erase(start, end int) any {
 
 func main() {
     var arr List[int]
-    //start := time.Now()
     for i := 0; i < 10; i++ {
         arr.Insert(i, i)
     }
@@ -227,11 +224,4 @@ func main() {
     arr.Erase(7, 9)
     fmt.Println("")
     arr.Print()
-    /*
-       for i := 0; i < 10; i++ {
-           _, a := arr.Access(i)
-           fmt.Print(a)
-           fmt.Print(" ")
-       }*/
-    //fmt.Println(time.Since(start))
 }
