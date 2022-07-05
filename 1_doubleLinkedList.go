@@ -215,16 +215,6 @@ func (list *List[T]) Erase(start, end int) error {
     return nil
 }
 
-func (list List[T]) ToByte() []byte {
-    var result []byte
-    curNode := list.head
-    for i := 0; i < list.size; i++ {
-        result = append(result, any(curNode.info).(byte))
-        curNode = curNode.next
-    }
-    return result
-}
-
 func main() {
     var arr List[int]
     for i := 0; i < 10; i++ {
