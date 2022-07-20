@@ -9,7 +9,7 @@ import (
 )
 
 type keyPair struct {
-    key   interface{comparable}
+    key   interface{ comparable }
     value any
 }
 
@@ -25,7 +25,7 @@ type HashTable[K comparable, V any] struct {
 }
 
 func (h *HashTable[K, V]) addBuckets(newB uint8) {
-    addB := (1 << newB) - (1 << h.b) - 1
+    addB := (1 << newB) - (1 << h.b) - 1 //buckets to add: 2**newB - 2**b - 1
     for i := 0; i < addB; i++ {
         h.buckets = append(h.buckets, bucket{})
     }
@@ -52,6 +52,10 @@ func (h *HashTable[K, V]) Delete(key K) error {
 }
 
 func (h *HashTable[K, V]) Add(key K, value V) error {
+    var kP keyPair
+    kP.key = key
+    kP.value = value
+
     if h.b == 0 {
         h.addBuckets(3)
         h.loadFactor = 0.0
@@ -59,18 +63,26 @@ func (h *HashTable[K, V]) Add(key K, value V) error {
     if h.loadFactor > 0.5 {
         h.addBuckets(h.b + 1)
     }
+
     hsh, err := computeHash(key)
     if err != nil {
         return err
     }
     index := putMask(h.b, hsh)
-    var kP keyPair
-    kP.key = key
-    kP.value = value
-    h.buckets[index].slice = append(h.buckets[index].slice, kP)
+    h.buckets[index].append(kP)
     h.loadFactor = float64(h.numOfElements+1) / float64(1<<h.b)
     h.numOfElements += 1
     return nil
+}
+
+func (b *bucket) append(kP keyPair) {
+    for _, el := range b.slice {
+        if el.key == kP.key {
+            el.value = kP.value
+            return
+        }
+    }
+    b.slice = append(b.slice, kP)
 }
 
 func putMask(b uint8, hash [32]byte) uint64 {
