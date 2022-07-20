@@ -1,5 +1,5 @@
 //I was defeated. After week of searching for plain explanation of algorithm,
-//rewriting code from C and Java, I can not make this sort wirking. 
+//rewriting code from C and Java, I can not make this sort working. 
 //Maybe in future I will finish this sorting, so I leave code here
 //maybe you could sort out how to correct this code.
 
