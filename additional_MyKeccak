@@ -1,0 +1,166 @@
+package main
+
+import (
+    "fmt"
+    "math/bits"
+)
+
+//const r = 136 // 1088 bits
+//const c = 64  // 512 bits
+//const d = 0x06
+
+//padding func makes []uint64 slice from initial message, and extends it to
+//len(output) mod 17 = 0. 1088 bits block size = 136 bytes = 17 int64 lanes
+func padding(s string) []uint64 {
+    input := []byte(s)
+    var inputPad []uint64
+    input = append(input, 0x06)
+
+    //extending input to len(input) mod 136 = 0
+    for k := 136 - len(input)%136; k > 0; k-- {
+        input = append(input, 0x00)
+    }
+    //P ^ (0x00 || 0x00 || ... || 0x80) see https://keccak.team/keccak_specs_summary.html
+    for i := 0; i < len(input)-1; i++ {
+        input[i] = input[i] ^ 0x00
+    }
+    input[len(input)-1] = input[len(input)-1] ^ 0x80
+
+    //merge bytes into uint64
+    for i := 0; i < len(input)/8; i++ {
+        var k uint64
+        for j := 0; j < 8; j++ {
+            k = k | (uint64(input[8*i+j]) << uint64(8*(7-j)))
+        }
+        inputPad = append(inputPad, k)
+    }
+    return inputPad
+}
+
+func makeOutput(input []uint64) string {
+    var s string
+    for i := 0; i < 4; i++ {
+        s += fmt.Sprintf("%x", input[i])
+    }
+    return s
+}
+
+//Keccak256 have this parameters:
+//r = 1088 bits
+//c = 512 bits
+//state = 512 + 1088 = 1600 bits
+func Keccak256(message string) string {
+
+    paddedMessage := padding(message)
+    state := make([]uint64, 25)
+    blockSize := 17 //1088 / 8 = 136   136 / 8 = 17 lanes 64 bits each
+    inputOffset := 0
+
+    for inputOffset < len(paddedMessage) {
+        for i := 0; i < blockSize; i++ {
+            state[i] = state[i] ^ paddedMessage[i+inputOffset]
+        }
+        inputOffset += blockSize
+        state = keccakF(state)
+    }
+    output := makeOutput(state[0:4])
+    return output
+}
+
+func keccakF(state []uint64) []uint64 {
+    for i := 0; i < 24; i++ {
+        state = round(state, i)
+    }
+    return state
+}
+
+func RC(i int) uint64 {
+    rc := [24]uint64{
+        0x0000000000000001, 0x0000000000008082,
+        0x800000000000808A, 0x8000000080008000,
+        0x000000000000808B, 0x0000000080000001,
+        0x8000000080008081, 0x8000000000008009,
+        0x000000000000008A, 0x0000000000000088,
+        0x0000000080008009, 0x000000008000000A,
+        0x000000008000808B, 0x800000000000008B,
+        0x8000000000008089, 0x8000000000008003,
+        0x8000000000008002, 0x8000000000000080,
+        0x000000000000800A, 0x800000008000000A,
+        0x8000000080008081, 0x8000000000008080,
+        0x0000000080000001, 0x8000000080008008}
+    return rc[i]
+}
+
+//matMul multiplicates permutation matrix with (a, b) vector
+func matMul(a, b int) (int, int) {
+    return b, 2*a + 3*b
+}
+
+func round(a []uint64, i int) []uint64 {
+    a = theta(a)
+    B := ro(a)
+    B = pi(a)
+    a = chi(a, B)
+    a[0] = a[0] ^ RC(i)
+    return a
+}
+
+func theta(A []uint64) []uint64 { //https://keccak.team/keccak_specs_summary.html
+    var C [5]uint64
+    var D [5]uint64
+    for x := 0; x < 5; x++ {
+        C[x] = A[5*x] ^ A[5*x+1] ^ A[5*x+2] ^ A[5*x+3]
+    }
+    D[0] = C[4] ^ bits.RotateLeft64(C[1], 1) //I really hate math in Go. Why -1 % 5 = -1?
+    for x := 1; x < 5; x++ {                 //apparently gophers didn't take math in the middle school
+        D[x] = C[x-1] ^ bits.RotateLeft64(C[(x+1)%5], 1)
+    }
+    for x := 0; x < 5; x++ {
+        for y := 0; y < 5; y++ {
+            A[5*x+y] = A[5*x+y] ^ D[x]
+        }
+    }
+    return A
+}
+
+func ro(a []uint64) [25]uint64 { //https://keccak.team/files/Keccak-reference-3.0.pdf pp. 21
+    x := 1 //https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.202.pdf pp. 11
+    y := 0
+    var A [25]uint64
+    A[0] = a[0]
+    for t := 0; t <= 23; t++ {
+        A[5*x+y] = bits.RotateLeft64(a[5*x+y], (t+1)*(t+2)/2)
+        x, y = matMul(x, y)
+        x, y = x%5, y%5
+    }
+    return A
+}
+
+func pi(a []uint64) [25]uint64 { //https://keccak.team/files/Keccak-reference-3.0.pdf pp. 20
+    X := 0
+    Y := 0
+    var A [25]uint64
+    for x := 0; x < 5; x++ {
+        for y := 0; y < 5; y++ {
+            X, Y = matMul(x, y)
+            X, Y = X%5, Y%5
+            A[5*X+Y] = a[5*x+y]
+        }
+    }
+    return A
+}
+
+//https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.202.pdf pp. 23
+func chi(a []uint64, B [25]uint64) []uint64 {
+    for x := 0; x < 5; x++ {
+        for y := 0; y < 5; y++ {
+            a[5*x+y] = B[5*x+y] ^ (^B[(5*(x+1)+y)%25] & B[(5*(x+2)+y)%25])
+        }
+    }
+    return a
+}
+
+func main() {
+    test := "test"
+    fmt.Println(Keccak256(test))
+}
