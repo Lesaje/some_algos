@@ -8,17 +8,17 @@ import (
     "fmt"
 )
 
-type keyPair[K comparable, V any] struct {
-    key   K
-    value V
+type keyPair struct {
+    key   interface{comparable}
+    value any
 }
 
-type bucket[K comparable, V any] struct {
-    arr [8]keyPair[K, V]
+type bucket struct {
+    slice []keyPair
 }
 
 type HashTable[K comparable, V any] struct {
-    buckets       []bucket[K, V]
+    buckets       []bucket
     b             uint8
     numOfElements uint64
     loadFactor    float64
@@ -27,7 +27,7 @@ type HashTable[K comparable, V any] struct {
 func (h *HashTable[K, V]) addBuckets(newB uint8) {
     addB := (1 << newB) - (1 << h.b) - 1
     for i := 0; i < addB; i++ {
-        h.buckets = append(h.buckets, bucket[K, V]{})
+        h.buckets = append(h.buckets, bucket{})
     }
     h.b = newB
     h.redistribute()
@@ -51,7 +51,7 @@ func (h *HashTable[K, V]) Delete(key K) error {
     return nil
 }
 
-func (h *HashTable[K, V]) Add(key K, value V) {
+func (h *HashTable[K, V]) Add(key K, value V) error {
     if h.b == 0 {
         h.addBuckets(3)
         h.loadFactor = 0.0
@@ -59,8 +59,18 @@ func (h *HashTable[K, V]) Add(key K, value V) {
     if h.loadFactor > 0.5 {
         h.addBuckets(h.b + 1)
     }
-
+    hsh, err := computeHash(key)
+    if err != nil {
+        return err
+    }
+    index := putMask(h.b, hsh)
+    var kP keyPair
+    kP.key = key
+    kP.value = value
+    h.buckets[index].slice = append(h.buckets[index].slice, kP)
     h.loadFactor = float64(h.numOfElements+1) / float64(1<<h.b)
+    h.numOfElements += 1
+    return nil
 }
 
 func putMask(b uint8, hash [32]byte) uint64 {
@@ -70,15 +80,15 @@ func putMask(b uint8, hash [32]byte) uint64 {
     return mask & hashId
 }
 
-func computeHash(key any) (error, [32]byte) {
+func computeHash(key any) ([32]byte, error) {
     var b bytes.Buffer
     enc := gob.NewEncoder(&b)
     err := enc.Encode(key)
     if err != nil {
-        return err, [32]byte{}
+        return [32]byte{}, err
     }
     h := sha256.Sum256(b.Bytes())
-    return nil, h
+    return h, nil
 }
 
 func main() {
