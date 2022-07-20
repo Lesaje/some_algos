@@ -1,4 +1,24 @@
+//It does not working
+
 package main
+
+// The history of my struggle is quite interesting.
+// I understand the reasons for my defeat, but I still do not understand what made the developers develop the language in this way.
+//
+// First of all, it's worth saying that I now understand quite well how hash tables are implemented, and I can implement them for specific data types.
+// The only problem that may arise is writing a function to redistribute elements to new buckets, however, this should not cause serious problems.
+//
+// In fact, the problem arises from the fact that the interface comparable cannot act as a data type, only a contraint. 
+// At the moment, I don't understand the reasons for this design decision.
+// 
+// When trying to make a bucket and a key pair through generics, I have problems when adding elements (I bet that in a bunch of other places)
+// related to the fact that when creating a generic key pair inside of function Add (which looks similar to the one from this code)
+// and trying to add it to the bucket, elements of slice []keyPair[K, V] and variable of type keyPair[K comparable, V any] do not match. 
+// I don't exactly know why, but I have some thoughts.
+//
+// I leave this code for the sake of this comment, and for the future, it would be interesting to look at all this in a couple of months, 
+// when my knowledge of the language improves and a couple of updates for Go come out.
+// 
 
 import (
     "bytes"
