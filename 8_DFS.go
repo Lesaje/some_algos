@@ -1,15 +1,12 @@
-package main
+package dfs
 
-import (
-    "fmt"
-)
-
-// DFS returns enter, exit "timestep" for every vertex in graph
-func DFS(graph map[uint32][]uint32) ([]uint32, []uint32) {
+// DFS returns enter and exit "timestamp" for every vertex in graph
+// and topologically sorted vertices (only for acyclic DAG)
+func DFS(graph map[uint32][]uint32) ([]uint32, []uint32, []uint32) {
     startTime := make([]uint32, len(graph))
     finishTime := make([]uint32, len(graph))
     isVisited := make([]bool, len(graph))
-    predecessor := make([]uint32, len(graph))
+    sorted := make([]uint32, 0, len(graph))
     time := uint32(0)
 
     //declare "closure" to avoid passing too many variables to dfsVisit function
@@ -21,12 +18,12 @@ func DFS(graph map[uint32][]uint32) ([]uint32, []uint32) {
         isVisited[vertex] = true
         for _, v := range graph[vertex] {
             if isVisited[v] == false {
-                predecessor[v] = vertex
                 dfsVisit(v)
             }
         }
         time += 1
         finishTime[vertex] = time
+        sorted = append(sorted, vertex)
     }
 
     for i := 0; i < len(graph); i++ {
@@ -34,17 +31,5 @@ func DFS(graph map[uint32][]uint32) ([]uint32, []uint32) {
             dfsVisit(uint32(i))
         }
     }
-    return startTime, finishTime
-}
-
-func main() {
-    graph := make(map[uint32][]uint32)
-    graph[0] = []uint32{1, 2}
-    graph[1] = []uint32{3, 4}
-    graph[2] = []uint32{5, 6}
-    graph[3] = []uint32{}
-    graph[4] = []uint32{}
-    graph[5] = []uint32{}
-    graph[6] = []uint32{}
-    fmt.Println(DFS(graph))
+    return startTime, finishTime, sorted
 }
