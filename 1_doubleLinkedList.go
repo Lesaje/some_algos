@@ -85,25 +85,25 @@ func (list List[T]) Print() { // because any cannot be converted to string, ther
 }
 
 //Access returns err, element
-func (list List[T]) Access(index int) (error, T) {
+func (list List[T]) Access(index int) (T, error) {
 
     if index >= list.size {
         var result T
-        return errors.New("list overflow"), result
+        return result, errors.New("list overflow")
     }
     if index < list.size/2 {
         curNode := list.head
         for i := 0; i < index; i++ {
             curNode = curNode.next
         }
-        return nil, curNode.info
+        return curNode.info, nil
     } else {
         curNode := list.tail
         index = list.size - index - 1
         for i := 0; i < index; i++ {
             curNode = curNode.prev
         }
-        return nil, curNode.info
+        return curNode.info, nil
     }
 }
 
@@ -120,6 +120,10 @@ func (list *List[T]) Erase(start, end int) error {
     var startNode *node[T]
     if start == 0 {
         if end == 0 {
+            if list.size == 1 {
+                list.size = 0
+                return nil
+            }
             list.head = list.head.next
             list.head.prev = nil
             list.size -= 1
