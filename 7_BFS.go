@@ -19,8 +19,8 @@ func findParents(graph map[uint32][]uint32, start uint32) []uint32 {
     q.Insert(start, q.Size())
 
     n := len(graph)
-    visited := make([]bool, n)
-    visited[start] = true
+    isVisited := make([]bool, n)
+    isVisited[start] = true
     parent := make([]uint32, n)
 
     for q.Size() > 0 {
@@ -29,9 +29,9 @@ func findParents(graph map[uint32][]uint32, start uint32) []uint32 {
         neighbors := graph[node]
 
         for _, neighbor := range neighbors {
-            if !visited[neighbor] {
+            if isVisited[neighbor] == false {
                 q.Insert(neighbor, q.Size())
-                visited[neighbor] = true
+                isVisited[neighbor] = true
                 parent[neighbor] = node
             }
         }
