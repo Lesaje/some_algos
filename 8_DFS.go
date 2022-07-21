@@ -8,7 +8,7 @@ import (
 func DFS(graph map[uint32][]uint32) ([]uint32, []uint32) {
     startTime := make([]uint32, len(graph))
     finishTime := make([]uint32, len(graph))
-    ifVertexVisited := make([]bool, len(graph))
+    isVisited := make([]bool, len(graph))
     predecessor := make([]uint32, len(graph))
     time := uint32(0)
 
@@ -18,9 +18,9 @@ func DFS(graph map[uint32][]uint32) ([]uint32, []uint32) {
     dfsVisit = func(vertex uint32) {
         time += 1
         startTime[vertex] = time
-        ifVertexVisited[vertex] = true
+        isVisited[vertex] = true
         for _, v := range graph[vertex] {
-            if ifVertexVisited[v] == false {
+            if isVisited[v] == false {
                 predecessor[v] = vertex
                 dfsVisit(v)
             }
@@ -30,7 +30,7 @@ func DFS(graph map[uint32][]uint32) ([]uint32, []uint32) {
     }
 
     for i := 0; i < len(graph); i++ {
-        if ifVertexVisited[i] == false {
+        if isVisited[i] == false {
             dfsVisit(uint32(i))
         }
     }
