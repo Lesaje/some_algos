@@ -2,6 +2,14 @@
 //rewriting code from C and Java, I can not make this sort working. 
 //Maybe in future I will finish this sorting, so I leave code here
 //maybe you could sort out how to correct this code.
+//
+//briefly, during recursive call we have sort(input, begin, end, depth+1) where end == length + 1
+//if we write 
+//if end-begin > 1 && end <= length {
+//              sort(input, begin, end, depth+1)
+//          }
+// then sort does not sort any integers greater than 64 (128 without recursion)
+//
 
 package main
 
