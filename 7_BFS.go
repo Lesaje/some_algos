@@ -2,7 +2,7 @@ package main
 
 // testing graph from here: https://youtu.be/oDqjPvD54Ss
 // to launch, take first file from this repo, and place it in list directory, change package main to package list there
-// after that import this package.
+// after that import list package.
 
 import (
     "fmt"
