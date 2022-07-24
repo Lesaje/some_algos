@@ -1,5 +1,9 @@
 package main
 
+//this wouldn't be fast, because at low level we will have to many calls
+//we need composite sorts, for example, parallel merge sort on top, and american sort at the bottom of recursive calls
+//but this is just a demonstration for concurrent programming
+
 import (
     "fmt"
     "math/rand"
