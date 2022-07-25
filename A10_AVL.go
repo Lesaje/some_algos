@@ -7,6 +7,9 @@ type node struct {
     right *node
 }
 
+//Node func must be used this way: root := Node(root, element)
+//and only once when you create your AVL tree
+//after that you must use root as a parameter for Insert and Delete
 func Node(key int) *node {
     var output node
     output.h = 1
@@ -72,6 +75,7 @@ func balance(n *node) *node {
     return n
 }
 
+//Insert func must be used this way: root = Insert(root, element)
 func Insert(n *node, key int) *node {
     if n == nil {
         return Node(key)
@@ -101,6 +105,7 @@ func (n *node) removeMin() *node {
     return balance(n)
 }
 
+//Delete func must be used this way: root = Delete(root, element)
 func Delete(n *node, key int) *node {
     if n == nil {
         return nil
@@ -110,29 +115,15 @@ func Delete(n *node, key int) *node {
     } else if key > n.key {
         n.right = Delete(n.right, key)
     } else {
-        q := n.left
-        r := n.right
-        if r == nil {
-            return q
+        leftRoot := n.left
+        rightRoot := n.right
+        if rightRoot == nil {
+            return leftRoot
         }
-        min := r.findMin()
-        min.right = r.removeMin()
-        min.left = q
+        min := rightRoot.findMin()
+        min.right = rightRoot.removeMin()
+        min.left = leftRoot
         return balance(min)
     }
     return balance(n)
-}
-
-func main() {
-    root := avl.Node(1)
-    root = avl.Insert(root, 2)
-    root = avl.Insert(root, 3)
-    root = avl.Insert(root, 4)
-    root = avl.Insert(root, 5)
-    root = avl.Insert(root, 6)
-    root = avl.Insert(root, 7)
-    fmt.Println(root)
-    root = avl.Delete(root, 4)
-    root = avl.Delete(root, 5)
-    fmt.Println(root)
 }
